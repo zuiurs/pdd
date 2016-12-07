@@ -8,14 +8,14 @@ import (
 )
 
 const (
-	Accuracy = 50
+	Accuracy = 200
 )
 
 type Hist []int
 
 // GetHistogram computes a histogram from the image given as path.
 // part into picture fragments, and decide color classification of the part.
-func GetHistogram(path string) (Hist, error) {
+func GetPartedHistogram(path string) (Hist, error) {
 	f, err := os.Open(path)
 	defer f.Close()
 	if err != nil {
@@ -42,6 +42,35 @@ func GetHistogram(path string) (Hist, error) {
 	for y := 0; y < partition; y++ {
 		for x := 0; x < partition; x++ {
 			RGBCheck(img, x*pX, y*pY, pX, pY, hist)
+		}
+	}
+
+	return hist, nil
+}
+
+func GetHistogram(path string) (Hist, error) {
+	f, err := os.Open(path)
+	defer f.Close()
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	img, _, err := image.Decode(f)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	// In current stage, use RGB classification.
+	hist := make(Hist, 3, 3)
+
+	rect := img.Bounds()
+	for y := 0; y < rect.Dy(); y++ {
+		for x := 0; x < rect.Dx(); x++ {
+			pr, pg, pb, pa := img.At(x, y).RGBA()
+			r, g, b := float2rgb(Unpremultiply(pr, pg, pb, pa))
+			ClassifyRGB(r, g, b, hist)
 		}
 	}
 

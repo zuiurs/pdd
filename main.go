@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	RankLimit = 10
+	RankLimit = 500
 )
 
 var Verbose bool
@@ -41,7 +41,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	target_h, err := GetHistogram(target)
+	colorBasedAnalyze(target, d)
+
+}
+
+func colorBasedAnalyze(target string, targetDir *os.File) {
+	target_h, err := GetPartedHistogram(target)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -51,13 +56,13 @@ func main() {
 
 	distanceMap := make(map[string]float64)
 
-	fInfos, err := d.Readdir(-1)
+	fInfos, err := targetDir.Readdir(-1)
 	for _, fInfo := range fInfos {
 		if target == fInfo.Name() {
 			continue
 		}
 		if strings.HasSuffix(fInfo.Name(), ".jpg") {
-			h, err := GetHistogram(fInfo.Name())
+			h, err := GetPartedHistogram(fInfo.Name())
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
